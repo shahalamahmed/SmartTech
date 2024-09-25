@@ -1,0 +1,69 @@
+﻿@model List<SmartTech.Models.Product>
+
+@{
+    ViewBag.Title = "Product List";
+    var nameFilter = ViewData["NameFilter"] as string ?? "";
+}
+
+<h2 class="text-center my-4">Product List</h2>
+<form method="get" action="@Url.Action("Index")" class="d-flex justify-content-center mb-4">
+    <!-- Filter field with existing value (if any) populated -->
+    <div class="input-group" style="max-width: 600px; width: 100%;">
+        <input type="text" name="NameFilter" value="@nameFilter" placeholder="Search by Name" class="form-control text-center" style="height: 50px; font-size: 18px;" />
+        <button type="submit" class="btn btn-primary" style="width: 120px; height: 50px; font-size: 18px;">Search</button>
+    </div>
+</form>
+
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="@product.ImageFile" alt="@product.ProductName" class="card-img-top img-fluid" />
+                <div class="card-body">
+                    <h5 class="card-title text-center">@product.ProductName</h5>
+                    <p class="card-text">@product.Description</p>
+                    <p class="card-text"><strong>Price:</strong> $@product.Price</p>
+                    <p class="card-text"><strong>Stock Quantity:</strong> @product.StockQuantity</p>
+                    <p class="card-text"><strong>Category:</strong> @product.Category</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-warning">Update</a>
+                        <button class="btn btn-danger delete-btn" data-id="@product.Id" data-name="@product.ProductName">Delete</button>
+                        <form id="delete-form-@product.Id" action="@Url.Action("Delete", new { id = product.Id })" method="post" style="display:none;">
+                            @Html.AntiForgeryToken()
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Handle delete confirmation
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const productId = this.getAttribute('data-id');
+                const productName = this.getAttribute('data-name');
+
+                Swal.fire({
+                    title: `Are you sure you want to delete ${productName}?`,
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Submit the delete form if confirmed
+                        document.getElementById(`delete-form-${productId}`).submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
